@@ -147,7 +147,6 @@
   <div class="tabs">
     <button class="tab-btn" data-tab="tabDashboard">📊 Dashboard</button>
     <button class="tab-btn" data-tab="tabGraficas">📈 Gráficas</button>
-    <button class="tab-btn" data-tab="tabSolicitudes">📥 Solicitudes de cargo</button>
     <button class="tab-btn" data-tab="tabFormadores">👨‍🏫 Formadores</button>
     <button class="tab-btn active" data-tab="tabCertificaciones">📄 Certificaciones</button>
   </div>
@@ -251,33 +250,7 @@
     </div>
   </section>
 
-  <!-- SOLICITUDES (por ahora no hay colección, quedará vacío sin error) -->
-  <section id="tabSolicitudes" class="hidden">
-    <div class="section-title">Solicitudes de cambio de cargo</div>
-    <div class="small">Gestiona solicitudes enviadas por formadores. (Colección opcional)</div>
-    <div style="margin-top:6px;margin-bottom:4px;display:flex;justify-content:space-between;align-items:center;gap:10px;">
-      <span class="small" id="solStatus"></span>
-      <button class="sec" id="solReloadBtn">🔄 Recargar</button>
-    </div>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Fecha</th>
-            <th>Cédula</th>
-            <th>Nombre</th>
-            <th>Cargo actual</th>
-            <th>Cargo solicitado</th>
-            <th>Formador</th>
-            <th>Estado</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody id="solBody"></tbody>
-      </table>
-    </div>
-  </section>
-
+ 
   <!-- FORMADORES -->
   <section id="tabFormadores" class="hidden">
     <div class="section-title">Gestión de formadores</div>
@@ -392,7 +365,6 @@ const tabButtons = [...document.querySelectorAll('.tab-btn')];
 const tabs = {
   tabDashboard:document.getElementById('tabDashboard'),
   tabGraficas:document.getElementById('tabGraficas'),
-  tabSolicitudes:document.getElementById('tabSolicitudes'),
   tabFormadores:document.getElementById('tabFormadores'),
   tabCertificaciones:document.getElementById('tabCertificaciones')
 };
