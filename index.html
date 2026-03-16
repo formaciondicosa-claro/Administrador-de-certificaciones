@@ -1280,11 +1280,18 @@ sb.auth.onAuthStateChange(async (event, session) => {
 
     showAdmin();
 
+    await cargarMapaFormadores();
+    llenarSelectFormadores();
+
+    cargarCertificaciones();
+
   }else{
 
     showLogin();
 
   }
+
+});
 
 });</script>
 
