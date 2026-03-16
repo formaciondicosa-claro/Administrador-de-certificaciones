@@ -147,6 +147,7 @@
   <div class="tabs">
     <button class="tab-btn" data-tab="tabDashboard">📊 Dashboard</button>
     <button class="tab-btn" data-tab="tabGraficas">📈 Gráficas</button>
+    <button class="tab-btn" data-tab="tabSolicitudes">📥 Solicitudes de cargo</button>
     <button class="tab-btn" data-tab="tabFormadores">👨‍🏫 Formadores</button>
     <button class="tab-btn active" data-tab="tabCertificaciones">📄 Certificaciones</button>
   </div>
@@ -250,7 +251,34 @@
     </div>
   </section>
 
-   <!-- FORMADORES -->
+  <!-- SOLICITUDES (por ahora no hay colección, quedará vacío sin error) -->
+  <section id="tabSolicitudes" class="hidden">
+    <div class="section-title">Solicitudes de cambio de cargo</div>
+    <div class="small">Gestiona solicitudes enviadas por formadores. (Colección opcional)</div>
+    <div style="margin-top:6px;margin-bottom:4px;display:flex;justify-content:space-between;align-items:center;gap:10px;">
+      <span class="small" id="solStatus"></span>
+      <button class="sec" id="solReloadBtn">🔄 Recargar</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Cédula</th>
+            <th>Nombre</th>
+            <th>Cargo actual</th>
+            <th>Cargo solicitado</th>
+            <th>Formador</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="solBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- FORMADORES -->
   <section id="tabFormadores" class="hidden">
     <div class="section-title">Gestión de formadores</div>
     <div style="display:flex;gap:10px;flex-wrap:wrap;">
@@ -957,6 +985,15 @@ const solStatus=document.getElementById('solStatus');
 const solReloadBtn=document.getElementById('solReloadBtn');
 solReloadBtn.addEventListener('click',cargarSolicitudes);
 
+async function cargarSolicitudes(){
+
+  solBody.innerHTML =
+  '<tr><td colspan="8" class="small">Módulo aún no conectado a Supabase.</td></tr>';
+
+  solStatus.textContent = "Sin datos.";
+
+}
+
 // ================= FORMADORES =================
 const formCedula=document.getElementById('formCedula');
 const formNombre=document.getElementById('formNombre');
@@ -1280,18 +1317,11 @@ sb.auth.onAuthStateChange(async (event, session) => {
 
     showAdmin();
 
-    await cargarMapaFormadores();
-    llenarSelectFormadores();
-
-    cargarCertificaciones();
-
   }else{
 
     showLogin();
 
   }
-
-});
 
 });</script>
 
