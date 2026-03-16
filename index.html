@@ -1286,10 +1286,12 @@ sb.auth.onAuthStateChange(async (event, session) => {
 
     adminBadge.textContent = "Admin: " + session.user.email;
 
-    // cargar datos necesarios
+    showAdmin();
+
     await cargarMapaFormadores();
     llenarSelectFormadores();
-    await cargarCertificaciones();
+
+    await cargarCertificaciones();   // carga los datos
 
   }else{
 
@@ -1298,7 +1300,23 @@ sb.auth.onAuthStateChange(async (event, session) => {
   }
 
 });
+  document.addEventListener("DOMContentLoaded", async () => {
 
+  const { data:{session} } = await sb.auth.getSession();
+
+  if(session){
+
+    showAdmin();
+
+    await cargarMapaFormadores();
+    llenarSelectFormadores();
+
+    await cargarCertificaciones();
+
+  }
+
+});
+  
 </script>
 
 </body>
