@@ -373,7 +373,13 @@ function showLogin(){loginCard.classList.remove('hidden');adminCard.classList.ad
 function showAdmin(){loginCard.classList.add('hidden');adminCard.classList.remove('hidden');}
 
 function escapeHTML(str){
-  return String(str||"").replace(/[&<>"']/g,s=>({"&":"&amp;","<":"&lt;",">":"&quot;","'":"&#39;"}[s]));
+  return String(str||"").replace(/[&<>"']/g,s=>({
+    "&":"&amp;",
+    "<":"&lt;",
+    ">":"&gt;",
+    '"':"&quot;",
+    "'":"&#39;"
+  }[s]));
 }
 function toNumber(v){
   const s=String(v??"").replace("%","").replace(",",".").trim();
@@ -514,7 +520,8 @@ loginBtn.addEventListener('click', async () => {
 await cargarMapaFormadores();
 llenarSelectFormadores();
 
-cargarCertificaciones();
+await cargarCertificaciones();
+await cargarDashboard();
 
 });
  
