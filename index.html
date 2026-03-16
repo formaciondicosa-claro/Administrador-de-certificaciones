@@ -574,19 +574,23 @@ async function cargarDashboard(){
     return;
   }
 
-  data.forEach(r=>{
-    DASH_ALL_CERTS.push({
-      fechaRegistro: r.vigencia_desde,
-      cedula: r.employees?.documento,
-      nombre: r.employees?.nombre,
-      cargo: r.employees?.cargo,
-      teorica: r.nota_teorica,
-      practica: r.nota_practica,
-      calibracion: r.nota_calibracion,
-      promedio: r.nota_promedio,
-      formadorEmail: r.formador_email
-    });
+ data.forEach(r=>{
+
+  if(!r.employees) return;
+
+  CERT_ALL.push({
+    fechaRegistro:r.vigencia_desde,
+    cedula:r.employees.documento,
+    nombre:r.employees.nombre,
+    cargo:r.employees.cargo,
+    teorica:r.nota_teorica,
+    practica:r.nota_practica,
+    calibracion:r.nota_calibracion,
+    promedio:r.nota_promedio,
+    formadorEmail:r.formador_email
   });
+
+});
 
   dashStatus.textContent="Registros cargados: "+DASH_ALL_CERTS.length;
 
@@ -1141,6 +1145,7 @@ async function cargarCertificaciones(){
   `)
   .order("vigencia_desde", { ascending:false });
   console.log("Certificaciones raw:", data);
+  console.log("Primer registro:", data[0]);
   if(error){
     certStatus.textContent="❌ "+error.message;
     return;
