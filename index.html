@@ -147,6 +147,7 @@
   <div class="tabs">
     <button class="tab-btn" data-tab="tabDashboard">📊 Dashboard</button>
     <button class="tab-btn" data-tab="tabGraficas">📈 Gráficas</button>
+    <button class="tab-btn" data-tab="tabSolicitudes">📥 Solicitudes de cargo</button>
     <button class="tab-btn" data-tab="tabFormadores">👨‍🏫 Formadores</button>
     <button class="tab-btn active" data-tab="tabCertificaciones">📄 Certificaciones</button>
   </div>
@@ -250,7 +251,33 @@
     </div>
   </section>
 
- 
+  <!-- SOLICITUDES (por ahora no hay colección, quedará vacío sin error) -->
+  <section id="tabSolicitudes" class="hidden">
+    <div class="section-title">Solicitudes de cambio de cargo</div>
+    <div class="small">Gestiona solicitudes enviadas por formadores. (Colección opcional)</div>
+    <div style="margin-top:6px;margin-bottom:4px;display:flex;justify-content:space-between;align-items:center;gap:10px;">
+      <span class="small" id="solStatus"></span>
+      <button class="sec" id="solReloadBtn">🔄 Recargar</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Cédula</th>
+            <th>Nombre</th>
+            <th>Cargo actual</th>
+            <th>Cargo solicitado</th>
+            <th>Formador</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="solBody"></tbody>
+      </table>
+    </div>
+  </section>
+
   <!-- FORMADORES -->
   <section id="tabFormadores" class="hidden">
     <div class="section-title">Gestión de formadores</div>
@@ -365,6 +392,7 @@ const tabButtons = [...document.querySelectorAll('.tab-btn')];
 const tabs = {
   tabDashboard:document.getElementById('tabDashboard'),
   tabGraficas:document.getElementById('tabGraficas'),
+  tabSolicitudes:document.getElementById('tabSolicitudes'),
   tabFormadores:document.getElementById('tabFormadores'),
   tabCertificaciones:document.getElementById('tabCertificaciones')
 };
@@ -373,13 +401,7 @@ function showLogin(){loginCard.classList.remove('hidden');adminCard.classList.ad
 function showAdmin(){loginCard.classList.add('hidden');adminCard.classList.remove('hidden');}
 
 function escapeHTML(str){
-  return String(str||"").replace(/[&<>"']/g,s=>({
-    "&":"&amp;",
-    "<":"&lt;",
-    ">":"&gt;",
-    '"':"&quot;",
-    "'":"&#39;"
-  }[s]));
+  return String(str||"").replace(/[&<>"']/g,s=>({"&":"&amp;","<":"&lt;",">":"&quot;","'":"&#39;"}[s]));
 }
 function toNumber(v){
   const s=String(v??"").replace("%","").replace(",",".").trim();
@@ -467,6 +489,7 @@ tabButtons.forEach(btn=>{
     tabs[btn.dataset.tab].classList.remove('hidden');
 
     if(btn.dataset.tab==="tabDashboard")      cargarDashboard();
+    if(btn.dataset.tab==="tabSolicitudes")    cargarSolicitudes();
     if(btn.dataset.tab==="tabFormadores")     cargarFormadores();
     if(btn.dataset.tab==="tabCertificaciones")cargarCertificaciones();
     if(btn.dataset.tab==="tabGraficas"){
@@ -520,8 +543,7 @@ loginBtn.addEventListener('click', async () => {
 await cargarMapaFormadores();
 llenarSelectFormadores();
 
-await cargarCertificaciones();
-await cargarDashboard();
+cargarCertificaciones();
 
 });
  
@@ -574,27 +596,25 @@ async function cargarDashboard(){
     return;
   }
 
- data.forEach(r=>{
+  data.forEach(r=>{
 
-  if(!r.employees) return;
+    DASH_ALL_CERTS.push({
+      fechaRegistro:r.vigencia_desde,
+      cedula:r.employees?.documento,
+      nombre:r.employees?.nombre,
+      cargo:r.employees?.cargo,
+      teorica:r.nota_teorica,
+      practica:r.nota_practica,
+      calibracion:r.nota_calibracion,
+      promedio:r.nota_promedio,
+      formadorEmail:r.formador_email
+    });
 
-  DASH_ALL_CERTS.push({
-    fechaRegistro:r.vigencia_desde,
-    cedula:r.employees.documento,
-    nombre:r.employees.nombre,
-    cargo:r.employees.cargo,
-    teorica:r.nota_teorica,
-    practica:r.nota_practica,
-    calibracion:r.nota_calibracion,
-    promedio:r.nota_promedio,
-    formadorEmail:r.formador_email
   });
-
-});
 
   dashStatus.textContent="Registros cargados: "+DASH_ALL_CERTS.length;
 
-  aplicarFiltroDashboard();   // 👈 llamada a la función
+  aplicarFiltroDashboard();
 }
 function aplicarFiltroDashboard(){
   if(!DASH_ALL_CERTS.length){
@@ -959,6 +979,21 @@ function updateCharts(filtrados){
   chartAprob.update();
 }
 
+// ================= SOLICITUDES =================
+const solBody=document.getElementById('solBody');
+const solStatus=document.getElementById('solStatus');
+const solReloadBtn=document.getElementById('solReloadBtn');
+solReloadBtn.addEventListener('click',cargarSolicitudes);
+
+async function cargarSolicitudes(){
+
+  solBody.innerHTML =
+  '<tr><td colspan="8" class="small">Módulo aún no conectado a Supabase.</td></tr>';
+
+  solStatus.textContent = "Sin datos.";
+
+}
+
 // ================= FORMADORES =================
 const formCedula=document.getElementById('formCedula');
 const formNombre=document.getElementById('formNombre');
@@ -1145,7 +1180,6 @@ async function cargarCertificaciones(){
   `)
   .order("vigencia_desde", { ascending:false });
   console.log("Certificaciones raw:", data);
-  console.log("Primer registro:", data[0]);
   if(error){
     certStatus.textContent="❌ "+error.message;
     return;
@@ -1283,36 +1317,13 @@ sb.auth.onAuthStateChange(async (event, session) => {
 
     showAdmin();
 
-    await cargarMapaFormadores();
-    llenarSelectFormadores();
-
-    await cargarCertificaciones();   // carga los datos
-
   }else{
 
     showLogin();
 
   }
 
-});
-  document.addEventListener("DOMContentLoaded", async () => {
-
-  const { data:{session} } = await sb.auth.getSession();
-
-  if(session){
-
-    showAdmin();
-
-    await cargarMapaFormadores();
-    llenarSelectFormadores();
-
-    await cargarCertificaciones();
-
-  }
-
-});
-  
-</script>
+});</script>
 
 </body>
 </html>
