@@ -1315,13 +1315,18 @@ sb.auth.onAuthStateChange(async (event, session) => {
 
     adminBadge.textContent = "Admin: " + session.user.email;
 
-    showAdmin();
+    // cargar datos necesarios
+    await cargarMapaFormadores();
+    llenarSelectFormadores();
+    await cargarCertificaciones();
 
   }else{
 
     showLogin();
 
   }
+
+});
 
 });</script>
 
