@@ -1,0 +1,1329 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin – Certificaciones</title>
+
+  <style>
+    :root{
+      --violeta:#a78bfa;
+      --violeta-osc:#7c3aed;
+      --bg:#050617;
+      --bg2:#111827;
+      --card:#17182b;
+      --text:#e8e6ff;
+      --muted:#bfbde6;
+      --border-soft:rgba(167,139,250,.25);
+      --danger:#f97373;
+      --success:#34d399;
+    }
+    *{box-sizing:border-box;font-family:Inter,system-ui,Segoe UI,Roboto,sans-serif;}
+    body{
+      margin:0;min-height:100vh;
+      background:radial-gradient(circle at top,var(--bg2),var(--bg));
+      color:var(--text);display:flex;align-items:center;justify-content:center;padding:16px;
+    }
+    .hidden{display:none;}
+    .card{
+      width:100%;max-width:1200px;
+      background:rgba(23,24,43,.97);
+      border-radius:20px;border:1px solid var(--border-soft);
+      box-shadow:0 18px 45px rgba(0,0,0,.7);
+      padding:18px 18px 16px;
+    }
+    h1{margin:0;font-size:22px;font-weight:800;}
+    .sub{font-size:12px;color:var(--muted);margin-top:2px;}
+    header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:12px;flex-wrap:wrap;}
+    button{
+      border:0;border-radius:999px;padding:7px 14px;font-size:12px;font-weight:600;
+      cursor:pointer;background:linear-gradient(135deg,var(--violeta-osc),var(--violeta));
+      color:white;display:inline-flex;align-items:center;gap:6px;box-shadow:0 10px 25px rgba(0,0,0,.6);transition:.12s ease;
+    }
+    button.sec{background:#211334;border:1px solid rgba(167,139,250,.5);box-shadow:none;}
+    button:disabled{opacity:.6;cursor:not-allowed;box-shadow:none;}
+    button:hover{transform:translateY(-1px);filter:brightness(1.05);}
+    button:active{transform:translateY(1px) scale(.97);}
+    .pill{padding:4px 10px;border-radius:999px;font-size:11px;background:#111827;border:1px solid rgba(167,139,250,.5);color:#e5e7eb;}
+    .tabs{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;}
+    .tab-btn{background:#111827;border-radius:999px;border:1px solid transparent;color:var(--muted);font-size:12px;padding:6px 12px;cursor:pointer;}
+    .tab-btn.active{border-color:var(--violeta);color:#f9fafb;background:rgba(124,58,237,.18);}
+    .field{margin-top:6px;display:flex;flex-direction:column;gap:3px;font-size:12px;}
+    .field label{color:var(--muted);font-size:11px;}
+    .field input,.field select,.field textarea{
+      padding:7px 9px;border-radius:10px;border:1px solid rgba(167,139,250,.35);
+      background:#020617;color:var(--text);font-size:12px;outline:none;
+    }
+    .field input:focus,.field select:focus,.field textarea:focus{
+      border-color:var(--violeta);box-shadow:0 0 0 1px rgba(167,139,250,.5);
+    }
+    .grid-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:8px;}
+    .stat-card{
+      background:#020617;border-radius:14px;border:1px solid rgba(148,163,184,.4);
+      padding:8px 10px;font-size:12px;
+    }
+    .stat-label{font-size:11px;color:var(--muted);margin-bottom:2px;}
+    .stat-value{font-size:18px;font-weight:700;}
+    .stat-sub{font-size:11px;color:#a5f3fc;margin-top:2px;}
+    .section-title{font-size:13px;font-weight:600;margin:10px 0 4px;color:#e5e7eb;}
+    .section-header{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;}
+    .table-wrap{
+      margin-top:4px;max-height:340px;overflow:auto;border-radius:12px;
+      border:1px solid rgba(148,163,184,.35);background:#020617;
+    }
+    table{width:100%;border-collapse:collapse;font-size:11.5px;}
+    thead{background:#020617;position:sticky;top:0;z-index:1;}
+    th,td{padding:6px 8px;border-bottom:1px solid rgba(31,41,55,.85);text-align:left;}
+    tbody tr:nth-child(even){background:#020617;}
+    tbody tr:hover{background:#111827;}
+    .badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:10px;}
+    .badge-pend{background:rgba(234,179,8,.18);color:#facc15;}
+    .badge-aprob{background:rgba(22,163,74,.18);color:#4ade80;}
+    .badge-rech{background:rgba(220,38,38,.18);color:#fb7185;}
+    .row-actions{display:flex;gap:4px;flex-wrap:wrap;}
+    .small{font-size:11px;color:var(--muted);}
+    .danger{color:var(--danger);}
+    .ok{color:var(--success);}
+    .spinner{width:14px;height:14px;border-radius:50%;border:2px solid rgba(255,255,255,.25);border-top-color:white;animation:spin .7s linear infinite;display:inline-block;}
+    @keyframes spin{to{transform:rotate(360deg);}}
+    .charts-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+      gap:12px;
+      margin-top:8px;
+    }
+    .chart-card{
+      background:#020617;
+      border-radius:14px;
+      border:1px solid rgba(148,163,184,.35);
+      padding:8px 10px;
+      min-height:220px;
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+    }
+    canvas{max-height:260px;}
+  </style>
+
+   <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="card" id="loginCard">
+  <header>
+    <div>
+      <h1>Admin certificaciones</h1>
+      <div class="sub">Acceso restringido solo administrador</div>
+    </div>
+  </header>
+  <div class="field">
+    <label>Correo admin</label>
+    <input id="email" type="email" placeholder="daniel.waltero@dico.com.co">
+  </div>
+  <div class="field">
+    <label>Contraseña</label>
+    <input id="pass" type="password" placeholder="Contraseña admin">
+  </div>
+  <button style="margin-top:10px;width:100%;" id="loginBtn">Ingresar</button>
+  <div id="loginStatus" class="small" style="margin-top:8px;min-height:18px;"></div>
+</div>
+
+<!-- PANEL ADMIN -->
+<div class="card hidden" id="adminCard">
+  <header>
+    <div>
+      <h1>Panel administrativo</h1>
+      <div class="sub" id="adminSub">Control y análisis de certificaciones</div>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+      <span class="pill" id="adminBadge">Admin</span>
+      <button class="sec" id="logoutBtn">Cerrar sesión</button>
+    </div>
+  </header>
+
+  <div class="tabs">
+    <button class="tab-btn" data-tab="tabDashboard">📊 Dashboard</button>
+    <button class="tab-btn" data-tab="tabGraficas">📈 Gráficas</button>
+    <button class="tab-btn" data-tab="tabSolicitudes">📥 Solicitudes de cargo</button>
+    <button class="tab-btn" data-tab="tabFormadores">👨‍🏫 Formadores</button>
+    <button class="tab-btn active" data-tab="tabCertificaciones">📄 Certificaciones</button>
+  </div>
+
+  <!-- DASHBOARD -->
+  <section id="tabDashboard" class="hidden">
+    <div class="section-title">Filtro de rango</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
+      <div class="field">
+        <label>Desde</label>
+        <input type="date" id="dashDesde">
+      </div>
+      <div class="field">
+        <label>Hasta</label>
+        <input type="date" id="dashHasta">
+      </div>
+      <!-- 🔹 NUEVO FILTRO POR FORMADOR -->
+      <div class="field">
+        <label>Formador</label>
+        <select id="dashFormador">
+  <option value="">Todos los formadores</option>
+</select>
+      </div>
+      <!-- 🔹 FIN CAMBIO -->
+      <button id="dashAplicarBtn">Aplicar</button>
+      <span class="small" id="dashStatus"></span>
+    </div>
+
+    <div class="grid-3">
+      <div class="stat-card">
+        <div class="stat-label">Promedio general</div>
+        <div class="stat-value" id="dashPromGeneral">—</div>
+        <div class="stat-sub" id="dashDetallePruebas">Teo: — · Prac: — · Cal: —</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">% Aprobados</div>
+        <div class="stat-value" id="dashPctAprob">—</div>
+        <div class="stat-sub" id="dashAprobDetalle">Aprobados: — / —</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Total certificaciones</div>
+        <div class="stat-value" id="dashTotalReg">—</div>
+        <div class="stat-sub" id="dashRangoTexto">Rango seleccionado</div>
+      </div>
+    </div>
+
+    <div class="section-title">Promedio por cargo</div>
+    <div class="table-wrap" id="dashCargoWrap">
+      <table>
+        <thead>
+          <tr><th>Cargo</th><th>Promedio %</th><th>Total notas</th></tr>
+        </thead>
+        <tbody id="dashCargoBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- GRÁFICAS -->
+  <section id="tabGraficas" class="hidden">
+    <div class="section-header">
+      <div class="section-title" style="margin-bottom:0;">Gráficas del rendimiento</div>
+      <button class="sec" id="graficasFsBtn">🖥 Pantalla completa</button>
+    </div>
+    <div class="small">
+      Usa el filtro de fechas del Dashboard. Las gráficas se actualizan con el mismo rango.
+    </div>
+
+    <!-- 🔵 Filtros propios de gráficas -->
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin:8px 0 10px;">
+      <div class="field">
+        <label>Desde (gráficas)</label>
+        <input type="date" id="grafDesde">
+      </div>
+      <div class="field">
+        <label>Hasta (gráficas)</label>
+        <input type="date" id="grafHasta">
+      </div>
+      <div class="field">
+        <label>Formador (gráficas)</label>
+        <select id="grafFormador">
+  <option value="">Todos los formadores</option>
+</select>
+      </div>
+      <button id="grafAplicarBtn">Aplicar filtros gráficas</button>
+      <span id="grafStatus" class="small"></span>
+    </div>
+
+    <div class="charts-grid">
+      <div class="chart-card">
+        <canvas id="chartFormador"></canvas>
+      </div>
+      <div class="chart-card">
+        <canvas id="chartCargo"></canvas>
+      </div>
+      <div class="chart-card">
+        <canvas id="chartMes"></canvas>
+      </div>
+      <div class="chart-card">
+        <canvas id="chartAprob"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <!-- SOLICITUDES (por ahora no hay colección, quedará vacío sin error) -->
+  <section id="tabSolicitudes" class="hidden">
+    <div class="section-title">Solicitudes de cambio de cargo</div>
+    <div class="small">Gestiona solicitudes enviadas por formadores. (Colección opcional)</div>
+    <div style="margin-top:6px;margin-bottom:4px;display:flex;justify-content:space-between;align-items:center;gap:10px;">
+      <span class="small" id="solStatus"></span>
+      <button class="sec" id="solReloadBtn">🔄 Recargar</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Cédula</th>
+            <th>Nombre</th>
+            <th>Cargo actual</th>
+            <th>Cargo solicitado</th>
+            <th>Formador</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="solBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- FORMADORES -->
+  <section id="tabFormadores" class="hidden">
+    <div class="section-title">Gestión de formadores</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <div style="flex:1;min-width:210px;">
+        <div class="section-title">Nuevo / editar formador</div>
+        <div class="field">
+          <label>Cédula</label>
+          <input id="formCedula" type="text">
+        </div>
+        <div class="field">
+          <label>Nombre</label>
+          <input id="formNombre" type="text">
+        </div>
+        <div class="field">
+          <label>Correo</label>
+          <input id="formEmail" type="email">
+        </div>
+        <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap;">
+          <button id="formGuardarBtn">💾 Guardar</button>
+          <button class="sec" id="formLimpiarBtn">Limpiar</button>
+        </div>
+        <div id="formStatus" class="small" style="margin-top:6px;"></div>
+      </div>
+      <div style="flex:2;min-width:260px;">
+        <div class="section-title">Listado de formadores</div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Cédula</th><th>Nombre</th><th>Correo</th><th>Acciones</th></tr>
+            </thead>
+            <tbody id="formBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CERTIFICACIONES -->
+  <section id="tabCertificaciones">
+    <div class="section-title">Certificaciones registradas</div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end;margin-bottom:6px;">
+      <div class="field">
+        <label>Filtrar por cédula</label>
+        <input id="certFiltroCedula" placeholder="Cédula colaborador">
+      </div>
+      <div class="field">
+        <label>Filtrar por formador</label>
+        <select id="certFiltroFormador">
+<option value="">Todos los formadores</option>
+</select>
+      </div>
+      <div class="field">
+        <label>Desde</label>
+        <input type="date" id="certDesde">
+      </div>
+      <div class="field">
+        <label>Hasta</label>
+        <input type="date" id="certHasta">
+      </div>
+      <button id="certAplicarBtn">Aplicar filtros</button>
+      <button class="sec" id="certLimpiarBtn">Limpiar</button>
+      <button class="sec" id="certExportBtn">⬇️ Exportar CSV</button>
+    </div>
+    <div class="small" id="certStatus" style="margin-bottom:4px;"></div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Fecha</th><th>Cédula</th><th>Nombre</th><th>Cargo</th>
+            <th>Teórica</th><th>Práctica</th><th>Calibración</th>
+            <th>Formador</th>
+          </tr>
+        </thead>
+        <tbody id="certBody"></tbody>
+      </table>
+    </div>
+  </section>
+</div>
+
+<script>
+// ================= SUPABASE =================
+const SUPABASE_URL = "https://zltjlwfnqrjojguewaiq.supabase.co";
+const SUPABASE_KEY = "sb_publishable_Q_-wmXnWL1V5A8gjSgjZTQ_UumLas2f";
+
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+
+// ================= DOM & UTILES =================
+const loginCard = document.getElementById('loginCard');
+const adminCard = document.getElementById('adminCard');
+const emailInput = document.getElementById('email');
+const passInput  = document.getElementById('pass');
+const loginBtn   = document.getElementById('loginBtn');
+const loginStatus= document.getElementById('loginStatus');
+const logoutBtn  = document.getElementById('logoutBtn');
+logoutBtn.addEventListener("click", async () => {
+
+  await sb.auth.signOut();
+
+  showLogin();
+
+  loginStatus.textContent = "";
+  emailInput.value = "";
+  passInput.value = "";
+
+});
+const adminBadge = document.getElementById('adminBadge');
+const adminSub   = document.getElementById('adminSub');
+
+const tabButtons = [...document.querySelectorAll('.tab-btn')];
+const tabs = {
+  tabDashboard:document.getElementById('tabDashboard'),
+  tabGraficas:document.getElementById('tabGraficas'),
+  tabSolicitudes:document.getElementById('tabSolicitudes'),
+  tabFormadores:document.getElementById('tabFormadores'),
+  tabCertificaciones:document.getElementById('tabCertificaciones')
+};
+
+function showLogin(){loginCard.classList.remove('hidden');adminCard.classList.add('hidden');}
+function showAdmin(){loginCard.classList.add('hidden');adminCard.classList.remove('hidden');}
+
+function escapeHTML(str){
+  return String(str||"").replace(/[&<>"']/g,s=>({"&":"&amp;","<":"&lt;",">":"&quot;","'":"&#39;"}[s]));
+}
+function toNumber(v){
+  const s=String(v??"").replace("%","").replace(",",".").trim();
+  const n=parseFloat(s);
+  return isNaN(n)?NaN:n;
+}
+
+// mapa dinámico email -> nombre desde colección "formadores"
+let FORMADORES_EMAIL_MAP = {};
+function getNombreFormadorFromRecord(r){
+
+  const email = String(r.formadorEmail || "").toLowerCase();
+
+  if(FORMADORES_EMAIL_MAP[email]){
+    return FORMADORES_EMAIL_MAP[email];
+  }
+
+  return email || "—";
+
+}
+function llenarSelectFormadores(){
+
+  const selects = [
+    document.getElementById("certFiltroFormador"),
+    document.getElementById("dashFormador"),
+    document.getElementById("grafFormador")
+  ];
+
+  selects.forEach(sel=>{
+
+    if(!sel) return;
+
+    sel.innerHTML = '<option value="">Todos los formadores</option>';
+
+    Object.entries(FORMADORES_EMAIL_MAP).forEach(([email,nombre])=>{
+
+      const opt = document.createElement("option");
+
+      opt.value = email;
+      opt.textContent = nombre;
+
+      sel.appendChild(opt);
+
+    });
+
+  });
+
+}
+async function cargarMapaFormadores(){
+
+  FORMADORES_EMAIL_MAP = {};
+
+  const { data, error } = await sb
+  .from("formadores")
+  .select("email,nombre");
+
+  if(error){
+    console.log("Error cargando formadores:", error);
+    return;
+  }
+
+  data.forEach(f=>{
+    FORMADORES_EMAIL_MAP[f.email.toLowerCase()] = f.nombre;
+  });
+
+}
+
+function getFechaRegistroDate(r){
+
+  if(!r.fechaRegistro) return null;
+
+  const d = new Date(r.fechaRegistro);
+
+  if(!isNaN(d)) return d;
+
+  return null;
+
+}
+// TABS
+tabButtons.forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    tabButtons.forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    Object.values(tabs).forEach(t=>t.classList.add('hidden'));
+    tabs[btn.dataset.tab].classList.remove('hidden');
+
+    if(btn.dataset.tab==="tabDashboard")      cargarDashboard();
+    if(btn.dataset.tab==="tabSolicitudes")    cargarSolicitudes();
+    if(btn.dataset.tab==="tabFormadores")     cargarFormadores();
+    if(btn.dataset.tab==="tabCertificaciones")cargarCertificaciones();
+    if(btn.dataset.tab==="tabGraficas"){
+      if(!DASH_ALL_CERTS.length){
+        // si aún no se han cargado certificaciones, usamos dashboard para cargarlas una vez
+        cargarDashboard();
+      }else{
+        // si hay filtros en gráficas, se respetan
+        if(grafDesde.value || grafHasta.value || grafFormador.value){
+          aplicarFiltroGraficas();
+        }else if(LAST_DASH_FILTRADOS.length){
+          // si no hay filtros propios, usamos el rango del dashboard si existe
+          updateCharts(LAST_DASH_FILTRADOS);
+        }else{
+          // si no hay nada filtrado, mostramos todo
+          updateCharts(DASH_ALL_CERTS);
+        }
+      }
+    }
+  });
+});
+
+// LOGIN
+loginBtn.addEventListener('click', async () => {
+
+  const email = emailInput.value.trim();
+  const pass  = passInput.value.trim();
+
+  if(!email || !pass){
+    loginStatus.textContent="Ingresa correo y contraseña.";
+    return;
+  }
+
+  loginStatus.textContent="Verificando...";
+
+  const { data, error } = await sb.auth.signInWithPassword({
+    email: email,
+    password: pass
+  });
+
+  if(error){
+    loginStatus.textContent="❌ " + error.message;
+    return;
+  }
+
+  adminBadge.textContent = "Admin: " + data.user.email;
+  adminSub.textContent = "Control total de certificaciones.";
+
+  showAdmin();
+
+await cargarMapaFormadores();
+llenarSelectFormadores();
+
+cargarCertificaciones();
+
+});
+ 
+
+// ================= DASHBOARD =================
+const dashDesde=document.getElementById('dashDesde');
+const dashHasta=document.getElementById('dashHasta');
+const dashFormador=document.getElementById('dashFormador'); // 🔹 NUEVA CONSTANTE
+const dashAplicarBtn=document.getElementById('dashAplicarBtn');
+dashAplicarBtn.addEventListener("click", aplicarFiltroDashboard);
+const dashStatus=document.getElementById('dashStatus');
+const dashPromGeneral=document.getElementById('dashPromGeneral');
+const dashDetallePruebas=document.getElementById('dashDetallePruebas');
+const dashPctAprob=document.getElementById('dashPctAprob');
+const dashAprobDetalle=document.getElementById('dashAprobDetalle');
+const dashTotalReg=document.getElementById('dashTotalReg');
+const dashRangoTexto=document.getElementById('dashRangoTexto');
+const dashCargoBody=document.getElementById('dashCargoBody');
+
+let DASH_ALL_CERTS=[];
+let LAST_DASH_FILTRADOS=[];
+
+async function cargarDashboard(){
+
+  await cargarMapaFormadores();
+  llenarSelectFormadores();
+  dashStatus.innerHTML="Cargando…";
+  dashCargoBody.innerHTML="";
+  DASH_ALL_CERTS=[];
+
+  const { data, error } = await sb
+  .from("employee_certifications")
+  .select(`
+    certificacion,
+    nota_teorica,
+    nota_practica,
+    nota_calibracion,
+    nota_promedio,
+    vigencia_desde,
+    formador_email,
+    employees (
+      documento,
+      nombre,
+      cargo
+    )
+  `);
+
+  if(error){
+    dashStatus.textContent="❌ "+error.message;
+    return;
+  }
+
+  data.forEach(r=>{
+
+    DASH_ALL_CERTS.push({
+      fechaRegistro:r.vigencia_desde,
+      cedula:r.employees?.documento,
+      nombre:r.employees?.nombre,
+      cargo:r.employees?.cargo,
+      teorica:r.nota_teorica,
+      practica:r.nota_practica,
+      calibracion:r.nota_calibracion,
+      promedio:r.nota_promedio,
+      formadorEmail:r.formador_email
+    });
+
+  });
+
+  dashStatus.textContent="Registros cargados: "+DASH_ALL_CERTS.length;
+
+  aplicarFiltroDashboard();
+}
+function aplicarFiltroDashboard(){
+  if(!DASH_ALL_CERTS.length){
+    dashPromGeneral.textContent="—";
+    dashDetallePruebas.textContent="Teo: — · Prac: — · Cal: —";
+    dashPctAprob.textContent="—";
+    dashAprobDetalle.textContent="Aprobados: — / —";
+    dashTotalReg.textContent="—";
+    dashRangoTexto.textContent="Sin datos";
+    dashCargoBody.innerHTML="";
+    LAST_DASH_FILTRADOS=[];
+    updateCharts([]);
+    return;
+  }
+
+  let desde=dashDesde.value?new Date(dashDesde.value+"T00:00:00"):null;
+  let hasta=dashHasta.value?new Date(dashHasta.value+"T23:59:59"):null;
+  const fForm = dashFormador.value.trim().toLowerCase(); // 🔹 VALOR DEL FILTRO FORMADOR
+
+  let filtrados=DASH_ALL_CERTS.filter(r=>{
+    const f=getFechaRegistroDate(r);
+    if(desde && (!f || f<desde)) return false;
+    if(hasta && (!f || f>hasta)) return false;
+
+    // 🔹 FILTRO POR FORMADOR (usa el nombre resuelto con mapa)
+    if(fForm){
+      const emailForm = String(r.formadorEmail||"").toLowerCase();
+if(fForm && emailForm !== fForm) return false;
+    }
+
+    return true;
+  });
+  if(!desde && !hasta && !fForm) filtrados=DASH_ALL_CERTS.slice();
+  LAST_DASH_FILTRADOS=filtrados;
+
+  let totalReg=filtrados.length;
+  let totalConNotas=0, aprobados=0;
+  let todasNotas=[];
+  const mapCargo={};
+
+  filtrados.forEach(r=>{
+    const te=toNumber(r.teorica);
+    const pr=toNumber(r.practica);
+    const ca=toNumber(r.calibracion);
+    const promCampo=toNumber(r.promedio);
+    const cargo=(r.cargo||"").trim()||"(Sin cargo)";
+
+    if(!mapCargo[cargo]) mapCargo[cargo]={notas:[]};
+
+    // determinar qué pruebas existen
+    let tp=r.tipoPrueba||{};
+    let hasTe=false,hasPr=false,hasCa=false;
+
+    if(tp && (tp.teorica||tp.practica||tp.calibracion)){
+      hasTe=!!tp.teorica;
+      hasPr=!!tp.practica;
+      hasCa=!!tp.calibracion;
+    }else{
+      hasTe=!isNaN(te);
+      hasPr=!isNaN(pr);
+      hasCa=!isNaN(ca);
+    }
+
+    let registroTieneNotas=false;
+    let registroAprobado=true;
+
+    if(!isNaN(promCampo)){
+      registroTieneNotas=true;
+      if(promCampo<90) registroAprobado=false;
+      todasNotas.push(promCampo);
+      mapCargo[cargo].notas.push(promCampo);
+    }else{
+      const notasTmp=[];
+      if(hasTe && !isNaN(te)){registroTieneNotas=true;notasTmp.push(te);}
+      if(hasPr && !isNaN(pr)){registroTieneNotas=true;notasTmp.push(pr);}
+      if(hasCa && !isNaN(ca)){registroTieneNotas=true;notasTmp.push(ca);}
+
+      notasTmp.forEach(n=>{
+        todasNotas.push(n);
+        mapCargo[cargo].notas.push(n);
+        if(n<90) registroAprobado=false;
+      });
+    }
+
+    if(registroTieneNotas){
+      totalConNotas++;
+      if(registroAprobado) aprobados++;
+    }
+  });
+
+  const promGeneral=todasNotas.length?(todasNotas.reduce((a,b)=>a+b,0)/todasNotas.length):NaN;
+  dashPromGeneral.textContent=isNaN(promGeneral)?"—":promGeneral.toFixed(1)+"%";
+
+  const filtroArr=(fn)=>filtrados.map(fn).map(toNumber).filter(n=>!isNaN(n));
+  const teArr=filtroArr(x=>x.teorica);
+  const prArr=filtroArr(x=>x.practica);
+  const caArr=filtroArr(x=>x.calibracion);
+  const avg=a=>a.length?(a.reduce((x,y)=>x+y,0)/a.length).toFixed(1)+"%":"—";
+  dashDetallePruebas.textContent=`Teo: ${avg(teArr)} · Prac: ${avg(prArr)} · Cal: ${avg(caArr)}`;
+
+  const pctAprob=totalConNotas?Math.round(aprobados*100/totalConNotas):0;
+  dashPctAprob.textContent=totalConNotas?pctAprob+"%":"—";
+  dashAprobDetalle.textContent=`Aprobados: ${aprobados} / ${totalConNotas}`;
+  dashTotalReg.textContent=String(totalReg);
+
+  if(desde||hasta||fForm){
+    const dTxt=desde?dashDesde.value:"inicio";
+    const hTxt=hasta?dashHasta.value:"hoy";
+    const fTxt=fForm?` · Formador contiene: "${dashFormador.value.trim()}"`:"";
+    dashRangoTexto.textContent=`Rango: ${dTxt} → ${hTxt}${fTxt}`;
+  }else{
+    dashRangoTexto.textContent="Rango: todo el historial";
+  }
+
+  dashCargoBody.innerHTML="";
+  Object.keys(mapCargo).forEach(c=>{
+    const arr=mapCargo[c].notas;
+    if(!arr.length) return;
+    const prom=(arr.reduce((a,b)=>a+b,0)/arr.length).toFixed(1);
+    const tr=document.createElement("tr");
+    tr.innerHTML=`<td>${escapeHTML(c)}</td><td>${prom}%</td><td>${arr.length}</td>`;
+    dashCargoBody.appendChild(tr);
+  });
+
+  updateCharts(filtrados);
+}
+
+// ================= GRÁFICAS (Chart.js) =================
+let chartFormador=null;
+let chartCargo=null;
+let chartMes=null;
+let chartAprob=null;
+
+const graficasFsBtn=document.getElementById('graficasFsBtn');
+const tabGraficas=document.getElementById('tabGraficas');
+
+// 🔵 Filtros propios de gráficas
+const grafDesde = document.getElementById('grafDesde');
+const grafHasta = document.getElementById('grafHasta');
+const grafFormador = document.getElementById('grafFormador');
+const grafAplicarBtn = document.getElementById('grafAplicarBtn');
+const grafStatus = document.getElementById('grafStatus');
+
+
+graficasFsBtn.addEventListener('click',()=>{
+  if(!document.fullscreenElement){
+    if(tabGraficas.requestFullscreen){
+      tabGraficas.requestFullscreen();
+    }else{
+      alert("Pantalla completa no soportada en este navegador.");
+    }
+  }else{
+    document.exitFullscreen && document.exitFullscreen();
+  }
+});
+document.addEventListener('fullscreenchange',()=>{
+  if(document.fullscreenElement){
+    graficasFsBtn.textContent="⤫ Salir pantalla completa";
+  }else{
+    graficasFsBtn.textContent="🖥 Pantalla completa";
+  }
+});
+
+// 🔵 Aplicar filtros solo a las gráficas
+function aplicarFiltroGraficas(){
+  if(!DASH_ALL_CERTS.length){
+    grafStatus.textContent = "No hay datos.";
+    updateCharts([]);
+    return;
+  }
+
+  grafStatus.innerHTML = "Filtrando… <span class='spinner'></span>";
+
+  const fForm = grafFormador.value.trim().toLowerCase();
+  const desde = grafDesde.value ? new Date(grafDesde.value + "T00:00:00") : null;
+  const hasta = grafHasta.value ? new Date(grafHasta.value + "T23:59:59") : null;
+
+  let filtrados = DASH_ALL_CERTS.filter(r => {
+    const nombreForm = getNombreFormadorFromRecord(r).toLowerCase();
+    if (fForm && !nombreForm.includes(fForm)) return false;
+
+    const fecha = getFechaRegistroDate(r);
+    if (desde && (!fecha || fecha < desde)) return false;
+    if (hasta && (!fecha || fecha > hasta)) return false;
+
+    return true;
+  });
+
+  grafStatus.textContent = `Mostrando ${filtrados.length} registros.`;
+  updateCharts(filtrados);
+}
+
+// botón de aplicar filtros de gráficas
+grafAplicarBtn.addEventListener('click', aplicarFiltroGraficas);
+
+function ensureCharts(){
+  const baseOptions={
+    responsive:true,
+    maintainAspectRatio:false,
+    plugins:{
+      legend:{labels:{color:'#e5e7eb',font:{size:11}}},
+      tooltip:{mode:'index',intersect:false}
+    },
+    scales:{
+      x:{ticks:{color:'#9ca3af',font:{size:10}},grid:{color:'rgba(75,85,99,0.35)'}},
+      y:{ticks:{color:'#9ca3af',font:{size:10}},grid:{color:'rgba(55,65,81,0.35)'}}
+    }
+  };
+  const ctxForm=document.getElementById('chartFormador').getContext('2d');
+  const ctxCargo=document.getElementById('chartCargo').getContext('2d');
+  const ctxMes=document.getElementById('chartMes').getContext('2d');
+  const ctxAprob=document.getElementById('chartAprob').getContext('2d');
+
+  if(!chartFormador){
+    chartFormador=new Chart(ctxForm,{
+      type:'bar',
+      data:{labels:[],datasets:[{label:'Promedio %',data:[],backgroundColor:'rgba(167,139,250,0.8)',borderColor:'#a78bfa',borderWidth:1}]},
+      options:{...baseOptions,plugins:{...baseOptions.plugins,legend:{display:false}}}
+    });
+  }
+  if(!chartCargo){
+    chartCargo=new Chart(ctxCargo,{
+      type:'bar',
+      data:{labels:[],datasets:[{label:'Promedio %',data:[],backgroundColor:'rgba(147,197,253,0.8)',borderColor:'#93c5fd',borderWidth:1}]},
+      options:{...baseOptions,indexAxis:'y',plugins:{...baseOptions.plugins,legend:{display:false}}}
+    });
+  }
+  if(!chartMes){
+    chartMes=new Chart(ctxMes,{
+      type:'line',
+      data:{labels:[],datasets:[{label:'% Aprobación',data:[],borderColor:'#fbbf24',backgroundColor:'rgba(251,191,36,0.2)',tension:0.3,fill:true,borderWidth:2,pointRadius:3}]},
+      options:{...baseOptions,scales:{x:{...baseOptions.scales.x},y:{...baseOptions.scales.y,min:0,max:100}}}
+    });
+  }
+  if(!chartAprob){
+    chartAprob=new Chart(ctxAprob,{
+      type:'doughnut',
+      data:{
+        labels:['Aprobados','No aprobados'],
+        datasets:[{data:[0,0],backgroundColor:['#22c55e','#ef4444'],borderColor:['#22c55e','#ef4444'],borderWidth:1}]
+      },
+      options:{
+        responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{position:'bottom',labels:{color:'#e5e7eb',font:{size:11}}}}
+      }
+    });
+  }
+}
+
+function updateCharts(filtrados){
+  ensureCharts();
+  if(!filtrados || !filtrados.length){
+    chartFormador.data.labels=[];
+    chartFormador.data.datasets[0].data=[];
+    chartFormador.update();
+
+    chartCargo.data.labels=[];
+    chartCargo.data.datasets[0].data=[];
+    chartCargo.update();
+
+    chartMes.data.labels=[];
+    chartMes.data.datasets[0].data=[];
+    chartMes.update();
+
+    chartAprob.data.datasets[0].data=[0,0];
+    chartAprob.update();
+    return;
+  }
+
+  const porFormador={};
+  const porCargo={};
+  const porMes={};
+  let totalConNotas=0;
+  let aprobadosRegs=0;
+
+  filtrados.forEach(r=>{
+    const te=toNumber(r.teorica);
+    const pr=toNumber(r.practica);
+    const ca=toNumber(r.calibracion);
+    const promCampo=toNumber(r.promedio);
+
+    const formKey=getNombreFormadorFromRecord(r);
+    const cargoKey=(r.cargo||"(Sin cargo)").trim() || "(Sin cargo)";
+    const f=getFechaRegistroDate(r);
+    const mesKey=f?(f.getFullYear()+"-"+String(f.getMonth()+1).padStart(2,"0")):"Sin fecha";
+
+    if(!porFormador[formKey])porFormador[formKey]={suma:0,count:0};
+    if(!porCargo[cargoKey]) porCargo[cargoKey]={suma:0,count:0};
+    if(!porMes[mesKey])   porMes[mesKey]={aprob:0,total:0};
+
+    let tp=r.tipoPrueba||{};
+    let hasTe=false,hasPr=false,hasCa=false;
+
+    if(tp && (tp.teorica||tp.practica||tp.calibracion)){
+      hasTe=!!tp.teorica;
+      hasPr=!!tp.practica;
+      hasCa=!!tp.calibracion;
+    }else{
+      hasTe=!isNaN(te);
+      hasPr=!isNaN(pr);
+      hasCa=!isNaN(ca);
+    }
+
+    let notas=[];
+    let registroTieneNotas=false;
+    let registroAprobado=true;
+
+    if(!isNaN(promCampo)){
+      registroTieneNotas=true;
+      notas.push(promCampo);
+      if(promCampo<90) registroAprobado=false;
+    }else{
+      if(hasTe && !isNaN(te)){registroTieneNotas=true;notas.push(te);}
+      if(hasPr && !isNaN(pr)){registroTieneNotas=true;notas.push(pr);}
+      if(hasCa && !isNaN(ca)){registroTieneNotas=true;notas.push(ca);}
+      notas.forEach(n=>{ if(n<90) registroAprobado=false; });
+    }
+
+    if(registroTieneNotas){
+      totalConNotas++;
+      if(registroAprobado) aprobadosRegs++;
+
+      notas.forEach(n=>{
+        porFormador[formKey].suma+=n; porFormador[formKey].count++;
+        porCargo[cargoKey].suma+=n;   porCargo[cargoKey].count++;
+      });
+
+      porMes[mesKey].total++;
+      if(registroAprobado){
+        porMes[mesKey].aprob++;
+      }
+    }
+  });
+
+  const formLabels=Object.keys(porFormador);
+  const formData=formLabels.map(k=>porFormador[k].count?(porFormador[k].suma/porFormador[k].count).toFixed(1):0);
+  chartFormador.data.labels=formLabels;
+  chartFormador.data.datasets[0].data=formData;
+  chartFormador.update();
+
+  const cargoLabels=Object.keys(porCargo);
+  const cargoData=cargoLabels.map(k=>porCargo[k].count?(porCargo[k].suma/porCargo[k].count).toFixed(1):0);
+  chartCargo.data.labels=cargoLabels;
+  chartCargo.data.datasets[0].data=cargoData;
+  chartCargo.update();
+
+  const mesKeys=Object.keys(porMes).filter(k=>k!=="Sin fecha").sort();
+  const mesLabels=mesKeys.map(k=>{const [y,m]=k.split("-");return m+"/"+y;});
+  const mesData=mesKeys.map(k=>{
+    const obj=porMes[k];
+    return obj.total?Math.round(obj.aprob*100/obj.total):0;
+  });
+  chartMes.data.labels=mesLabels;
+  chartMes.data.datasets[0].data=mesData;
+  chartMes.update();
+
+  const noAprob=(totalConNotas-aprobadosRegs);
+  chartAprob.data.datasets[0].data=[
+    aprobadosRegs,
+    noAprob<0?0:noAprob
+  ];
+  chartAprob.update();
+}
+
+// ================= SOLICITUDES =================
+const solBody=document.getElementById('solBody');
+const solStatus=document.getElementById('solStatus');
+const solReloadBtn=document.getElementById('solReloadBtn');
+solReloadBtn.addEventListener('click',cargarSolicitudes);
+
+async function cargarSolicitudes(){
+
+  solBody.innerHTML =
+  '<tr><td colspan="8" class="small">Módulo aún no conectado a Supabase.</td></tr>';
+
+  solStatus.textContent = "Sin datos.";
+
+}
+
+// ================= FORMADORES =================
+const formCedula=document.getElementById('formCedula');
+const formNombre=document.getElementById('formNombre');
+const formEmail=document.getElementById('formEmail');
+const formGuardarBtn=document.getElementById('formGuardarBtn');
+const formLimpiarBtn=document.getElementById('formLimpiarBtn');
+const formStatus=document.getElementById('formStatus');
+const formBody=document.getElementById('formBody');
+
+let FORM_EDIT_ID=null;
+
+async function cargarFormadores(){
+
+  formStatus.textContent="Cargando…";
+  formBody.innerHTML="";
+
+  const { data, error } = await sb
+    .from("formadores")
+    .select("*")
+    .order("nombre",{ascending:true});
+
+  if(error){
+    formStatus.textContent="❌ "+error.message;
+    return;
+  }
+
+  if(!data || !data.length){
+    formBody.innerHTML='<tr><td colspan="4" class="small">Sin formadores registrados.</td></tr>';
+    formStatus.textContent="Sin formadores.";
+    FORMADORES_EMAIL_MAP={};
+    return;
+  }
+
+  FORMADORES_EMAIL_MAP={};
+
+  data.forEach(d=>{
+
+    const id=d.id;
+
+    const email=String(d.email||"").toLowerCase().trim();
+    const nom=String(d.nombre||"").trim();
+
+    if(email && nom){
+      FORMADORES_EMAIL_MAP[email]=nom;
+    }
+
+    const tr=document.createElement("tr");
+
+    tr.innerHTML=`
+      <td>${escapeHTML(String(d.cedula||""))}</td>
+      <td>${escapeHTML(d.nombre||"")}</td>
+      <td>${escapeHTML(d.email||"")}</td>
+      <td>
+        <div class="row-actions">
+          <button class="sec" data-edit="${id}">✏️</button>
+          <button class="sec danger" data-del="${id}">🗑</button>
+        </div>
+      </td>
+    `;
+
+    formBody.appendChild(tr);
+
+  });
+
+  formStatus.textContent="Formadores cargados.";
+
+}
+formGuardarBtn.addEventListener('click',async()=>{
+  const ced=formCedula.value.trim();
+  const nom=formNombre.value.trim();
+  const email=formEmail.value.trim();
+  if(!ced||!nom||!email){
+    formStatus.textContent="⚠ Completa todos los campos.";
+    return;
+  }
+  formStatus.textContent="Guardando…";
+  formGuardarBtn.disabled=true;
+  try{
+    if(FORM_EDIT_ID){
+      await sb
+.from("formadores")
+.update({
+  cedula:ced,
+  nombre:nom,
+  email:email
+})
+.eq("id", FORM_EDIT_ID);
+      formStatus.textContent="Actualizado.";
+    }else{
+
+  await sb.from("formadores").insert({
+    cedula:ced,
+    nombre:nom,
+    email:email,
+    cargo:"Formador"
+  });
+
+  formStatus.textContent="Creado.";
+
+}
+    
+    FORM_EDIT_ID=null;
+    limpiarFormador();
+    await cargarFormadores(); // refresca también el mapa de nombres
+  }catch(e){
+    formStatus.textContent="❌ "+e.message;
+  }finally{
+    formGuardarBtn.disabled=false;
+  }
+});
+formLimpiarBtn.addEventListener('click',()=>{FORM_EDIT_ID=null;limpiarFormador();formStatus.textContent="";});
+function limpiarFormador(){
+  formCedula.value="";
+  formNombre.value="";
+  formEmail.value="";
+}
+formBody.addEventListener('click',async e=>{
+  const btn=e.target.closest('button');
+  if(!btn)return;
+  const editId=btn.dataset.edit;
+  const delId =btn.dataset.del;
+  try{
+    if(editId){
+      const { data } = await sb
+.from("formadores")
+.select("*")
+.eq("id", editId)
+.single();
+      if(!data) throw new Error("No encontrado");
+      const d=data;
+      FORM_EDIT_ID=editId;
+      formCedula.value=d.cedula||"";
+      formNombre.value=d.nombre||"";
+      formEmail.value=d.email||"";
+      formStatus.textContent="Editando formador.";
+    }
+    if(delId){
+      if(!confirm("¿Eliminar formador? Esto no elimina certificaciones ya registradas."))return;
+      await sb
+.from("formadores")
+.delete()
+.eq("id", delId);
+      await cargarFormadores();
+    }
+  }catch(e){
+    alert("Error: "+e.message);
+  }
+});
+
+// ================= CERTIFICACIONES =================
+const certBody=document.getElementById('certBody');
+const certStatus=document.getElementById('certStatus');
+const certFiltroCedula=document.getElementById('certFiltroCedula');
+const certFiltroFormador=document.getElementById('certFiltroFormador');
+const certDesde=document.getElementById('certDesde');
+const certHasta=document.getElementById('certHasta');
+const certAplicarBtn=document.getElementById('certAplicarBtn');
+const certLimpiarBtn=document.getElementById('certLimpiarBtn');
+const certExportBtn=document.getElementById('certExportBtn');
+
+let CERT_ALL=[];
+let CERT_FILTRADAS=[];
+
+async function cargarCertificaciones(){
+
+  certStatus.innerHTML="Cargando…";
+  certBody.innerHTML="";
+  CERT_ALL=[];
+
+  const { data, error } = await sb
+  .from("employee_certifications")
+  .select(`
+    nota_teorica,
+    nota_practica,
+    nota_calibracion,
+    nota_promedio,
+    vigencia_desde,
+    formador_email,
+    employees (
+      documento,
+      nombre,
+      cargo
+    )
+  `)
+  .order("vigencia_desde", { ascending:false });
+  console.log("Certificaciones raw:", data);
+  if(error){
+    certStatus.textContent="❌ "+error.message;
+    return;
+  }
+
+  data.forEach(r=>{
+
+    CERT_ALL.push({
+      fechaRegistro:r.vigencia_desde,
+      cedula:r.employees?.documento,
+      nombre:r.employees?.nombre,
+      cargo:r.employees?.cargo,
+      teorica:r.nota_teorica,
+      practica:r.nota_practica,
+      calibracion:r.nota_calibracion,
+      promedio:r.nota_promedio,
+      formadorEmail:r.formador_email
+    });
+
+  });
+
+  certStatus.textContent="Total registros: "+CERT_ALL.length;
+
+  CERT_FILTRADAS = CERT_ALL;
+renderCertTable();
+}
+certAplicarBtn.addEventListener('click',aplicarFiltrosCert);
+certLimpiarBtn.addEventListener('click',()=>{
+  certFiltroCedula.value="";
+  certFiltroFormador.value="";
+  certDesde.value="";
+  certHasta.value="";
+  aplicarFiltrosCert();
+});
+function aplicarFiltrosCert(){
+
+  let lista = [...CERT_ALL];
+
+  const fCed = certFiltroCedula.value.trim().toLowerCase();
+  const fForm = certFiltroFormador.value.trim().toLowerCase();
+
+  let desde = certDesde.value ? new Date(certDesde.value + "T00:00:00") : null;
+  let hasta = certHasta.value ? new Date(certHasta.value + "T23:59:59") : null;
+
+  lista = lista.filter(r => {
+
+    if (fCed && String(r.cedula || "").toLowerCase().indexOf(fCed) === -1)
+      return false;
+
+    const emailFormador = String(r.formadorEmail || "").toLowerCase();
+
+    if (fForm && emailFormador !== fForm)
+      return false;
+
+    const f = getFechaRegistroDate(r);
+
+    if (desde && (!f || f < desde))
+      return false;
+
+    if (hasta && (!f || f > hasta))
+      return false;
+
+    return true;
+
+  });
+
+  CERT_FILTRADAS = lista;
+
+  certStatus.textContent =
+    `Mostrando: ${CERT_FILTRADAS.length} / ${CERT_ALL.length}`;
+
+  renderCertTable();
+
+}
+function renderCertTable(){
+  certBody.innerHTML="";
+  if(!CERT_FILTRADAS.length){
+    certBody.innerHTML='<tr><td colspan="8" class="small">Sin registros para el filtro.</td></tr>';
+    return;
+  }
+  CERT_FILTRADAS.forEach(r=>{
+    const tr=document.createElement("tr");
+    tr.innerHTML=`
+      <td>${escapeHTML(r.fechaRegistro||"")}</td>
+      <td>${escapeHTML(r.cedula||"")}</td>
+      <td>${escapeHTML(r.nombre||"")}</td>
+      <td>${escapeHTML(r.cargo||"")}</td>
+      <td>${escapeHTML(r.teorica||"")}</td>
+      <td>${escapeHTML(r.practica||"")}</td>
+      <td>${escapeHTML(r.calibracion||"")}</td>
+     <td>${escapeHTML(getNombreFormadorFromRecord(r))}</td>
+    `;
+    certBody.appendChild(tr);
+  });
+}
+
+// Exportar CSV
+certExportBtn.addEventListener('click',()=>{
+  const filas=CERT_FILTRADAS.length?CERT_FILTRADAS:CERT_ALL;
+  if(!filas.length){
+    alert("No hay datos para exportar.");
+    return;
+  }
+  const encabezados=["Fecha","Cedula","Nombre","Cargo","Teorica","Practica","Calibracion","FormadorNombre","FormadorEmail"];
+  const rows=[encabezados.join(";")];
+  filas.forEach(r=>{
+    const cols=[
+      r.fechaRegistro||"",
+      r.cedula||"",
+      r.nombre||"",
+      r.cargo||"",
+      r.teorica||"",
+      r.practica||"",
+      r.calibracion||"",
+      getNombreFormadorFromRecord(r),
+      r.formadorEmail||""
+    ].map(v=>String(v).replace(/;/g,","));
+    rows.push(cols.join(";"));
+  });
+  const blob=new Blob([rows.join("\n")],{type:"text/csv;charset=utf-8;"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url;
+  a.download="certificaciones_admin.csv";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+});
+sb.auth.onAuthStateChange(async (event, session) => {
+
+  if(session){
+
+    adminBadge.textContent = "Admin: " + session.user.email;
+
+    showAdmin();
+
+  }else{
+
+    showLogin();
+
+  }
+
+});</script>
+
+</body>
+</html>
