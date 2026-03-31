@@ -108,6 +108,7 @@
    <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 </head>
 <body>
 
@@ -145,6 +146,7 @@
   </header>
 
   <div class="tabs">
+    <button class="tab-btn" data-tab="tabEmployees">👥 Empleados</button>
     <button class="tab-btn" data-tab="tabDashboard">📊 Dashboard</button>
     <button class="tab-btn" data-tab="tabGraficas">📈 Gráficas</button>
     <button class="tab-btn" data-tab="tabSolicitudes">📥 Solicitudes de cargo</button>
@@ -356,6 +358,21 @@
       </table>
     </div>
   </section>
+  <section id="tabEmployees" class="hidden">
+
+  <div class="section-title">Carga masiva de empleados</div>
+
+  <div style="display:flex;flex-direction:column;gap:8px;max-width:400px;">
+
+    <input type="file" id="csvEmployees" accept=".csv" />
+
+    <button id="btnSubirEmployees">Subir empleados</button>
+
+    <div id="empStatus" class="small"></div>
+
+  </div>
+
+</section>
 </div>
 
 <script>
@@ -390,6 +407,7 @@ const adminSub   = document.getElementById('adminSub');
 
 const tabButtons = [...document.querySelectorAll('.tab-btn')];
 const tabs = {
+  tabEmployees:document.getElementById('tabEmployees'), // 👈 AGREGA ESTA
   tabDashboard:document.getElementById('tabDashboard'),
   tabGraficas:document.getElementById('tabGraficas'),
   tabSolicitudes:document.getElementById('tabSolicitudes'),
@@ -1308,6 +1326,65 @@ certExportBtn.addEventListener('click',()=>{
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
+});
+  // ================= CARGA EMPLEADOS CSV =================
+
+const btnSubirEmployees = document.getElementById('btnSubirEmployees');
+const empStatus = document.getElementById('empStatus');
+
+btnSubirEmployees.addEventListener('click', async () => {
+
+  const file = document.getElementById('csvEmployees').files[0];
+
+  if (!file) {
+    alert("Selecciona un archivo CSV");
+    return;
+  }
+
+  empStatus.innerHTML = "📄 Leyendo archivo...";
+
+  Papa.parse(file, {
+    header: true,
+    skipEmptyLines: true,
+    complete: async function(results) {
+
+      try {
+
+        let data = results.data;
+
+        // 🔧 LIMPIEZA EXACTA PARA TU TABLA
+        data = data.map(row => ({
+          documento: row.documento?.toString().trim(),
+          nombre: row.nombre?.trim(),
+          cargo: row.cargo?.trim() || null,
+          area: row.area?.trim() || null,
+          correo: row.correo?.trim() || null
+        }));
+
+        // 🚫 eliminar filas inválidas
+        data = data.filter(r => r.documento && r.nombre);
+
+        empStatus.innerHTML = `🚀 Subiendo ${data.length} empleados...`;
+
+        const { error } = await sb
+          .from('employees')
+          .upsert(data, { onConflict: 'documento' });
+
+        if (error) {
+          console.error(error);
+          empStatus.innerHTML = "❌ Error: " + error.message;
+        } else {
+          empStatus.innerHTML = "✅ Empleados cargados correctamente";
+        }
+
+      } catch (err) {
+        console.error(err);
+        empStatus.innerHTML = "❌ Error procesando archivo";
+      }
+
+    }
+  });
+
 });
 sb.auth.onAuthStateChange(async (event, session) => {
 
