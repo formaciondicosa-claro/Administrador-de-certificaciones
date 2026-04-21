@@ -1363,6 +1363,14 @@ btnSubirEmployees.addEventListener('click', async () => {
 
         // 🚫 eliminar filas inválidas
         data = data.filter(r => r.documento && r.nombre);
+// ✅ eliminar duplicados por documento
+const map = new Map();
+
+data.forEach(r => {
+  map.set(r.documento, r);
+});
+
+data = Array.from(map.values());
 
         empStatus.innerHTML = `🚀 Subiendo ${data.length} empleados...`;
 
