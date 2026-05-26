@@ -1355,12 +1355,13 @@ btnSubirEmployees.addEventListener('click', async () => {
 
         // 🔧 LIMPIEZA EXACTA PARA TU TABLA
         data = data.map(row => ({
-          documento: row.documento?.toString().trim(),
-          nombre: row.nombre?.trim(),
-          cargo: row.cargo?.trim() || null,
-          area: row.area?.trim() || null,
-          correo: row.correo?.trim() || null
-        }));
+  documento: row.DOCUMENTO?.toString().trim(),
+  nombre: row.NOMBRE?.trim(),
+  cargo: row.CARGO?.trim() || null,
+  area: row.AREA?.trim() || null,
+  correo: row.EMAIL?.trim() || null
+}));
+        console.log("FILAS:", data.slice(0,5));
 
         // 🚫 eliminar filas inválidas
         data = data.filter(r => r.documento && r.nombre);
