@@ -1346,6 +1346,7 @@ btnSubirEmployees.addEventListener('click', async () => {
   Papa.parse(file, {
     header: true,
     skipEmptyLines: true,
+    delimiter: ";",
     complete: async function(results) {
 
       try {
